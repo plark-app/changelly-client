@@ -1,16 +1,10 @@
+/// <reference path="../index.d.ts" />
+
 import crypto from 'crypto';
 import Axios, { AxiosInstance } from 'axios';
 
-export type ChangellyResponse<T = any> = {
-    jsonrpc: '2.0';
-    id: string;
-    result: T;
-};
-
-
 const API_URL = 'https://api.changelly.com';
 const SOCKET_URL = 'https://socket.changelly.com';
-
 
 export default class ChangellyClient {
 
@@ -56,6 +50,40 @@ export default class ChangellyClient {
 
     public async getCurrencies(): Promise<string[]> {
         const data = await this.sendRequest<string[]>('getCurrencies', {});
+
+        return data.result;
+    }
+
+
+    public async getMinAmount(from: string, to: string): Promise<number> {
+        const data = await this.sendRequest<string>('getMinAmount', {
+            from: from.toLocaleLowerCase(),
+            to: to.toLocaleLowerCase(),
+        });
+
+        return parseFloat(data.result);
+    }
+
+
+    public async getExchangeAmount(from: string, to: string, amount: number): Promise<number> {
+        const data = await this.sendRequest<string>('getExchangeAmount', {
+            from: from.toLocaleLowerCase(),
+            to: to.toLocaleLowerCase(),
+            amount: '' + amount,
+        });
+
+        return parseFloat(data.result);
+    }
+
+
+    public async createTransaction(option: CreateTransactionOption): Promise<Transaction> {
+        const data = await this.sendRequest<string>('createTransaction', {
+            from: option.from.toLocaleLowerCase(),
+            to: option.to.toLocaleLowerCase(),
+            address: option.address,
+            amount: option.amount,
+            extraId: option.extraId,
+        });
 
         return data.result;
     }
