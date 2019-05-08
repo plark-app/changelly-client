@@ -1,13 +1,19 @@
-/// <reference path="../index.d.ts" />
-
 import crypto from 'crypto';
 import Axios, { AxiosInstance } from 'axios';
+
+import {
+    ChangellyResponse,
+    ChangellyError,
+    ChangellyFindTransactionOption,
+    ChangellyTransaction,
+    ChangellyExtendedTransaction,
+    ChangellyCreateTransactionOption, ChangellyTransactionStatus,
+} from '../index';
 
 const API_URL = 'https://api.changelly.com';
 const SOCKET_URL = 'https://socket.changelly.com';
 
 export default class ChangellyClient {
-
     protected readonly apiKey: string;
     protected readonly apiSecret: string;
 
@@ -38,18 +44,39 @@ export default class ChangellyClient {
 
         const sign = this._sign(message);
 
-        const { data } = await this.client.request<ChangellyResponse<T>>({
+        const { data } = await this.client.request<ChangellyResponse<T> | ChangellyError>({
             method: 'POST',
             data: message,
             headers: { sign: sign },
         });
 
-        return data;
+        if ('error' in data) {
+            throw new Error(data.error.message);
+        }
+
+        return data as ChangellyResponse<T>;
     }
 
 
     public async getCurrencies(): Promise<string[]> {
         const data = await this.sendRequest<string[]>('getCurrencies', {});
+
+        return data.result;
+    }
+
+
+    public async getCurrenciesFull(): Promise<any[]> {
+        const data = await this.sendRequest<string[]>('getCurrenciesFull', {});
+
+        return data.result;
+    }
+
+
+    public async validateAddress(currency: string, address: string): Promise<boolean> {
+        const data = await this.sendRequest<boolean>('validateAddress', {
+            currency: currency,
+            address: address,
+        });
 
         return data.result;
     }
@@ -76,13 +103,37 @@ export default class ChangellyClient {
     }
 
 
-    public async createTransaction(option: CreateTransactionOption): Promise<Transaction> {
-        const data = await this.sendRequest<string>('createTransaction', {
+    public async createTransaction(option: ChangellyCreateTransactionOption): Promise<ChangellyTransaction> {
+        const data = await this.sendRequest<ChangellyTransaction>('createTransaction', {
             from: option.from.toLocaleLowerCase(),
             to: option.to.toLocaleLowerCase(),
             address: option.address,
             amount: option.amount,
             extraId: option.extraId,
+        });
+
+        console.log(data);
+
+        return {
+            ...data.result,
+            amountExpectedTo: +data.result.amountExpectedTo,
+        };
+    }
+
+
+    public async getTransactions(option: ChangellyFindTransactionOption): Promise<ChangellyExtendedTransaction[]> {
+        const data = await this.sendRequest<ChangellyExtendedTransaction[]>('getTransactions', {
+            ...option,
+            currency: option.currency ? option.currency.toLocaleLowerCase() : undefined,
+        });
+
+        return data.result;
+    }
+
+
+    public async getStatus(transactionId: string): Promise<ChangellyTransactionStatus> {
+        const data = await this.sendRequest<ChangellyTransactionStatus>('getStatus', {
+            id: transactionId,
         });
 
         return data.result;
