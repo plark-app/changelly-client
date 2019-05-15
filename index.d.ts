@@ -1,3 +1,10 @@
+export type ChangellyRequest<P = any> = {
+    jsonrpc: '2.0';
+    id: string;
+    method: string;
+    params: P;
+}
+
 export type ChangellyResponse<T = any> = {
     jsonrpc: '2.0';
     id: string;
@@ -119,7 +126,7 @@ declare class ChangellyClient {
 
     public getTransactions(option: Partial<ChangellyFindTransactionOption>): Promise<ChangellyExtendedTransaction[]>;
 
-    public getStatus(id: string): Promise<ChangellyTransaction[]>;
+    public getStatus(transactionId: string): Promise<ChangellyTransactionStatus>;
 }
 
 export default ChangellyClient;

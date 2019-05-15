@@ -85,7 +85,9 @@ describe('Can create Client', () => {
 
         const tx = transactions[0];
 
-        console.log(transactions);
+        assert.strictEqual(tx.currencyFrom, lastGeneratedTx.currencyFrom);
+        assert.strictEqual(tx.currencyTo, lastGeneratedTx.currencyTo);
+        assert.strictEqual(tx.payinAddress, lastGeneratedTx.payinAddress);
     });
 
 

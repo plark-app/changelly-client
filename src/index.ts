@@ -1,19 +1,21 @@
 import crypto from 'crypto';
 import Axios, { AxiosInstance } from 'axios';
 
-import {
+import ChangellyClientInterface, {
+    ChangellyRequest,
     ChangellyResponse,
     ChangellyError,
     ChangellyFindTransactionOption,
     ChangellyTransaction,
     ChangellyExtendedTransaction,
-    ChangellyCreateTransactionOption, ChangellyTransactionStatus,
+    ChangellyCreateTransactionOption,
+    ChangellyTransactionStatus,
 } from '../index';
 
 const API_URL = 'https://api.changelly.com';
 const SOCKET_URL = 'https://socket.changelly.com';
 
-export default class ChangellyClient {
+export default class ChangellyClient implements ChangellyClientInterface {
     protected readonly apiKey: string;
     protected readonly apiSecret: string;
 
@@ -35,7 +37,7 @@ export default class ChangellyClient {
 
     public async sendRequest<T = any>(method: string, params: any = {}): Promise<ChangellyResponse<T>> {
         const id = this._id();
-        const message = {
+        const message: ChangellyRequest = {
             method: method,
             jsonrpc: '2.0',
             params: params,
@@ -112,8 +114,6 @@ export default class ChangellyClient {
             extraId: option.extraId,
         });
 
-        console.log(data);
-
         return {
             ...data.result,
             amountExpectedTo: +data.result.amountExpectedTo,
@@ -141,7 +141,9 @@ export default class ChangellyClient {
 
 
     protected _id(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c: string) => {
+        const regexp = /[xy]/g;
+
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(regexp, (c: string) => {
             const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
 
             return v.toString(16);
