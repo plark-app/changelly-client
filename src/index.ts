@@ -10,6 +10,7 @@ import ChangellyClientInterface, {
     ChangellyExtendedTransaction,
     ChangellyCreateTransactionOption,
     ChangellyTransactionStatus,
+    ChangellyCurrencyFull,
 } from '../index';
 
 const API_URL = 'https://api.changelly.com';
@@ -67,8 +68,8 @@ export default class ChangellyClient implements ChangellyClientInterface {
     }
 
 
-    public async getCurrenciesFull(): Promise<any[]> {
-        const data = await this.sendRequest<string[]>('getCurrenciesFull', {});
+    public async getCurrenciesFull(): Promise<ChangellyCurrencyFull[]> {
+        const data = await this.sendRequest<ChangellyCurrencyFull[]>('getCurrenciesFull', {});
 
         return data.result;
     }

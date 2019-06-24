@@ -16,25 +16,28 @@ const txOption = {
 
 
 describe('Can create Client', () => {
-
-    if (!API_KEY || !API_SECRET) {
-        throw new Error('Need to implement API key and API secret for use Changelly Client tests');
-    }
-
-
-    it('Can create Client', () => {
-        try {
-            new ChangellyClient(API_KEY, API_SECRET);
-        } catch (error) {
-            assert.fail(error);
+    let client;
+    before(() => {
+        if (!API_KEY || !API_SECRET) {
+            throw new Error('Need to implement API key and API secret for use Changelly Client tests');
         }
+
+        client = new ChangellyClient(API_KEY, API_SECRET);
     });
 
-    const client = new ChangellyClient(API_KEY, API_SECRET);
+
     it('Can get Currencies List', async () => {
         const list = await client.getCurrencies();
 
         assert.ok(Array.isArray(list), 'Currency list is not Array');
+        assert.ok(list.length > 0, 'List does not contain any currencies');
+    });
+
+
+    it('Can get Currencies Full List', async () => {
+        const list = await client.getCurrenciesFull();
+
+        assert.ok(Array.isArray(list), 'Currency Full list is not Array');
         assert.ok(list.length > 0, 'List does not contain any currencies');
     });
 

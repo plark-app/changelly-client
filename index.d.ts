@@ -35,6 +35,22 @@ export type ChangellyTransactionStatus
     | 'overdue'
     | 'hold';
 
+
+export type ChangellyCurrencyFull = {
+    name: string;
+    ticker: string;
+    fullName: string;
+    enabled: boolean;
+    fixRateEnabled: boolean;
+    payinConfirmations: number;
+    extraIdName: string;
+    addressUrl: string;
+    transactionUrl: string;
+    image: string;
+    fixedTime: number;
+};
+
+
 export type ChangellyCreateTransactionOption = {
     from: string;
     to: string;
