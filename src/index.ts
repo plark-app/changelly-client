@@ -1,17 +1,7 @@
 import crypto from 'crypto';
-import Axios, { AxiosInstance } from 'axios';
+import Axios, {AxiosInstance} from 'axios';
 
-import ChangellyClientInterface, {
-    ChangellyRequest,
-    ChangellyResponse,
-    ChangellyError,
-    ChangellyFindTransactionOption,
-    ChangellyTransaction,
-    ChangellyExtendedTransaction,
-    ChangellyCreateTransactionOption,
-    ChangellyTransactionStatus,
-    ChangellyCurrencyFull,
-} from '../index';
+import ChangellyClientInterface, { changelly } from '../index';
 
 const API_URL = 'https://api.changelly.com';
 const SOCKET_URL = 'https://socket.changelly.com';
@@ -35,10 +25,9 @@ export default class ChangellyClient implements ChangellyClientInterface {
         });
     }
 
-
-    public async sendRequest<T = any>(method: string, params: any = {}): Promise<ChangellyResponse<T>> {
+    public async sendRequest<T = any>(method: string, params: any = {}): Promise<changelly.Response<T>> {
         const id = this._id();
-        const message: ChangellyRequest = {
+        const message: changelly.Request = {
             method: method,
             jsonrpc: '2.0',
             params: params,
@@ -47,17 +36,17 @@ export default class ChangellyClient implements ChangellyClientInterface {
 
         const sign = this._sign(message);
 
-        const { data } = await this.client.request<ChangellyResponse<T> | ChangellyError>({
+        const {data} = await this.client.request<changelly.Response<T> | changelly.Error>({
             method: 'POST',
             data: message,
-            headers: { sign: sign },
+            headers: {sign: sign},
         });
 
         if ('error' in data) {
             throw new Error(data.error.message);
         }
 
-        return data as ChangellyResponse<T>;
+        return data as changelly.Response<T>;
     }
 
 
@@ -68,8 +57,8 @@ export default class ChangellyClient implements ChangellyClientInterface {
     }
 
 
-    public async getCurrenciesFull(): Promise<ChangellyCurrencyFull[]> {
-        const data = await this.sendRequest<ChangellyCurrencyFull[]>('getCurrenciesFull', {});
+    public async getCurrenciesFull(): Promise<changelly.CurrencyFull[]> {
+        const data = await this.sendRequest<changelly.CurrencyFull[]>('getCurrenciesFull', {});
 
         return data.result;
     }
@@ -106,8 +95,23 @@ export default class ChangellyClient implements ChangellyClientInterface {
     }
 
 
-    public async createTransaction(option: ChangellyCreateTransactionOption): Promise<ChangellyTransaction> {
-        const data = await this.sendRequest<ChangellyTransaction>('createTransaction', {
+    public async getBulkExchangeAmount(
+        list: Array<{ from: string, to: string, amount: number }>
+    ): Promise<changelly.ExchangeAmount[]> {
+        const requestParams = list.map(opt => ({
+            from: opt.from.toLocaleLowerCase(),
+            to: opt.to.toLocaleLowerCase(),
+            amount: '' + opt.amount,
+        }));
+
+        const data = await this.sendRequest<changelly.ExchangeAmount[]>('getExchangeAmount', requestParams);
+
+        return data.result as changelly.ExchangeAmount[];
+    }
+
+
+    public async createTransaction(option: changelly.CreateTransactionOption): Promise<changelly.Transaction> {
+        const data = await this.sendRequest<changelly.Transaction>('createTransaction', {
             from: option.from.toLocaleLowerCase(),
             to: option.to.toLocaleLowerCase(),
             address: option.address,
@@ -122,8 +126,8 @@ export default class ChangellyClient implements ChangellyClientInterface {
     }
 
 
-    public async getTransactions(option: ChangellyFindTransactionOption): Promise<ChangellyExtendedTransaction[]> {
-        const data = await this.sendRequest<ChangellyExtendedTransaction[]>('getTransactions', {
+    public async getTransactions(option: changelly.FindTransactionOption): Promise<changelly.ExtendedTransaction[]> {
+        const data = await this.sendRequest<changelly.ExtendedTransaction[]>('getTransactions', {
             ...option,
             currency: option.currency ? option.currency.toLocaleLowerCase() : undefined,
         });
@@ -132,8 +136,8 @@ export default class ChangellyClient implements ChangellyClientInterface {
     }
 
 
-    public async getStatus(transactionId: string): Promise<ChangellyTransactionStatus> {
-        const data = await this.sendRequest<ChangellyTransactionStatus>('getStatus', {
+    public async getStatus(transactionId: string): Promise<changelly.TransactionStatus> {
+        const data = await this.sendRequest<changelly.TransactionStatus>('getStatus', {
             id: transactionId,
         });
 
