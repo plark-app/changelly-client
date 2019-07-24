@@ -32,7 +32,8 @@ export namespace changelly {
         | 'failed'
         | 'refunded'
         | 'overdue'
-        | 'hold';
+        | 'hold'
+        | 'expired';
 
     export type CurrencyFull = {
         name: string;
@@ -155,7 +156,7 @@ declare class ChangellyClient {
     public getExchangeAmount(from: string, to: string, amount: number): Promise<number>;
 
     public getBulkExchangeAmount(
-        list: Array<{ from: string, to: string, amount: number }>
+        list: Array<{ from: string, to: string, amount: number }>,
     ): Promise<changelly.ExchangeAmount[]>;
 
     public createTransaction(option: changelly.CreateTransactionOption): Promise<changelly.Transaction>;
