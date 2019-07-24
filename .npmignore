@@ -43,3 +43,4 @@ yarn.lock
 /lib/examples/
 /test/
 .env
+.rpt2_cache
