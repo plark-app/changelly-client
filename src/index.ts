@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import Axios, {AxiosInstance} from 'axios';
+import Axios, { AxiosInstance } from 'axios';
 
 import ChangellyClientInterface, { changelly } from '../index';
 
@@ -12,18 +12,24 @@ export default class ChangellyClient implements ChangellyClientInterface {
 
     protected readonly client: AxiosInstance;
 
-    public constructor(apiKey: string, apiSecret: string) {
+    /**
+     * @param {string} apiKey
+     * @param {string} apiSecret
+     * @param {string} host
+     */
+    public constructor(apiKey: string, apiSecret: string, host: string = API_URL) {
         this.apiKey = apiKey;
         this.apiSecret = apiSecret;
 
         this.client = Axios.create({
-            baseURL: API_URL,
+            baseURL: host,
             headers: {
                 'Content-Type': 'application/json',
                 'api-key': this.apiKey,
             },
         });
     }
+
 
     public async sendRequest<T = any>(method: string, params: any = {}): Promise<changelly.Response<T>> {
         const id = this._id();
@@ -36,10 +42,10 @@ export default class ChangellyClient implements ChangellyClientInterface {
 
         const sign = this._sign(message);
 
-        const {data} = await this.client.request<changelly.Response<T> | changelly.Error>({
+        const { data } = await this.client.request<changelly.Response<T> | changelly.Error>({
             method: 'POST',
             data: message,
-            headers: {sign: sign},
+            headers: { sign: sign },
         });
 
         if ('error' in data) {
@@ -74,6 +80,11 @@ export default class ChangellyClient implements ChangellyClientInterface {
     }
 
 
+    /**
+     * @param {string} from
+     * @param {string} to
+     * @return {Promise<number>}
+     */
     public async getMinAmount(from: string, to: string): Promise<number> {
         const data = await this.sendRequest<string>('getMinAmount', {
             from: from.toLocaleLowerCase(),
@@ -96,7 +107,7 @@ export default class ChangellyClient implements ChangellyClientInterface {
 
 
     public async getBulkExchangeAmount(
-        list: Array<{ from: string, to: string, amount: number }>
+        list: Array<{ from: string, to: string, amount: number }>,
     ): Promise<changelly.ExchangeAmount[]> {
         const requestParams = list.map(opt => ({
             from: opt.from.toLocaleLowerCase(),
@@ -126,6 +137,10 @@ export default class ChangellyClient implements ChangellyClientInterface {
     }
 
 
+    /**
+     * @param {changelly.FindTransactionOption} option
+     * @return {Promise<changelly.ExtendedTransaction[]>}
+     */
     public async getTransactions(option: changelly.FindTransactionOption): Promise<changelly.ExtendedTransaction[]> {
         const data = await this.sendRequest<changelly.ExtendedTransaction[]>('getTransactions', {
             ...option,
@@ -136,6 +151,10 @@ export default class ChangellyClient implements ChangellyClientInterface {
     }
 
 
+    /**
+     * @param {string} transactionId
+     * @return {Promise<changelly.TransactionStatus>}
+     */
     public async getStatus(transactionId: string): Promise<changelly.TransactionStatus> {
         const data = await this.sendRequest<changelly.TransactionStatus>('getStatus', {
             id: transactionId,
@@ -145,6 +164,10 @@ export default class ChangellyClient implements ChangellyClientInterface {
     }
 
 
+    /**
+     * @private
+     * @return {string}
+     */
     protected _id(): string {
         const regexp = /[xy]/g;
 
@@ -156,6 +179,12 @@ export default class ChangellyClient implements ChangellyClientInterface {
     }
 
 
+    /**
+     * @private
+     *
+     * @param {object} body
+     * @return {string}
+     */
     protected _sign(body: object): string {
         return crypto
             .createHmac('sha512', this.apiSecret)
