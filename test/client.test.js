@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const API_KEY = process.env.API_KEY;
 const API_SECRET = process.env.API_SECRET;
+const HOST = process.env.HOST;
 
 
 const txOption = {
@@ -22,7 +23,7 @@ describe('Can create Client', () => {
             throw new Error('Need to implement API key and API secret for use Changelly Client tests');
         }
 
-        client = new ChangellyClient(API_KEY, API_SECRET);
+        client = new ChangellyClient(API_KEY, API_SECRET, HOST);
     });
 
 

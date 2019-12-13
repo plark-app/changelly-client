@@ -143,7 +143,7 @@ export namespace changelly {
 }
 
 declare class ChangellyClient {
-    constructor(apiKey: string, apiSecret: string);
+    constructor(apiKey: string, apiSecret: string, host?: string);
 
     public getCurrencies(): Promise<string[]>;
 
